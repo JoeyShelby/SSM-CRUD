@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>员工信息</title>
+
+    <!--引入jquery-->
+    <script type="javascript" src="static/js/jquery-3.6.0.js"></script>
+    <!--引入bootstrap-->
+    <script src="static/bootstrap-4.4.1-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="static/bootstrap-4.4.1-dist/css/bootstrap.css"/>
+</head>
+<body>
+<h1 align="center">员工信息</h1>
+
+<div>
+    <button type="button" class="btn btn-primary">新增</button>
+    <button type="button" class="btn btn-danger">删除</button>
+</div>
+
+<div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">姓名</th>
+            <th scope="col">性别</th>
+            <th scope="col">邮箱</th>
+            <th scope="col">部门</th>
+            <th scope="col">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr  th:each="emp: ${pageInfo.list}">
+            <th th:text="${emp.empId}">1</th>
+            <td th:text="${emp.empName}">张三</td>
+            <td th:text="${emp.gender}">男</td>
+            <td th:text="${emp.email}">123@qq.com</td>
+            <td th:text="${emp.department.deptName}">后勤部门</td>
+            <td>
+                <div>
+                    <button type="button" class="btn btn-primary">编辑</button>
+                    <button type="button" class="btn btn-danger">删除</button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:text="|当前是第 ${pageInfo.pageNum} 页，共有 ${pageInfo.pages} 页，总计 ${pageInfo.total} 条记录|">
+    当前是第 n 页，共有 m 页，总计 x 条记录
+</div>
+
+<div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border">
+        <span class="border">
+            <a class="navbar-brand" th:href="@{/employee?pageNumber=1}">首页</a>
+        </span>
+        <span th:if="${!pageInfo.isFirstPage}">
+            <a class="navbar-brand" th:href="@{'/employee?pageNumber='+${pageInfo.prePage}}"><<</a>
+        </span>
+        <span class="border" th:each="pageNvi: ${pageInfo.navigatepageNums}">
+            <a class="navbar-brand" th:href="@{'/employee?pageNumber='+ ${pageNvi}}" th:text="${pageNvi}">1</a>
+        </span>
+        <span class="border" th:if="${!pageInfo.isLastPage}">
+            <a class="navbar-brand" th:href="@{'/employee?pageNumber='+${pageInfo.nextPage}}">>></a>
+        </span>
+        <span class="border">
+            <a class="navbar-brand" th:href="@{'/employee?pageNumber='+${pageInfo.pages}}">尾页</a>
+        </span>
+    </nav>
+</div>
+
+</body>
+</html>
