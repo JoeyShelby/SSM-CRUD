@@ -1,5 +1,13 @@
 package org.joey.pojo;
 
+
+import javax.validation.constraints.Email;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
+
+@Validated
 public class Employee {
     /**
      *
@@ -17,6 +25,7 @@ public class Employee {
      *
      * @mbg.generated Mon May 02 16:59:39 CST 2022
      */
+    @Pattern(regexp = "^([\\u4e00-\\u9fa5]{2,20}|[a-zA-Z\\s]{2,30})$", message = "员工名不合法")
     private String empName;
 
     /**
@@ -26,6 +35,7 @@ public class Employee {
      *
      * @mbg.generated Mon May 02 16:59:39 CST 2022
      */
+    @Pattern(regexp = "^[MF]{1}$", message = "性别只能是F或M")
     private String gender;
 
     /**
@@ -35,6 +45,7 @@ public class Employee {
      *
      * @mbg.generated Mon May 02 16:59:39 CST 2022
      */
+    @Email(message = "邮箱地址不合法")
     private String email;
 
     /**
@@ -44,6 +55,7 @@ public class Employee {
      *
      * @mbg.generated Mon May 02 16:59:39 CST 2022
      */
+    @Min(1)
     private Integer deptId;
 
     /**
