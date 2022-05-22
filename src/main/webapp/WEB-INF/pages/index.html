@@ -38,9 +38,10 @@
                     </div>
                     <div class="form-group row">
                         <div id="addGender">
-                            性别：<input type="radio" required name="gender" checked="checked" value="F">女
+                            性别：<input type="radio" name="gender" checked="checked" value="F">女
                             <input type="radio" name="gender" value="M">男
                         </div>
+                        <div style="color: red" id="addGenderShow"></div>
                     </div>
                     <div class="form-group row">
                         <div id="addEmail">
@@ -67,6 +68,55 @@
         </div>
     </div>
 </div>
+
+<!--修改员工信息模态框-->
+<div class="modal" id="editModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">修改员工信息</h5>
+                <button type="button" class="close" id="closeEditModalBtn" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editEmpForm">
+                    <div class="form-group row">
+                        <div id="editEmpName">
+                            姓名：<input type="text" required name="empName" id="empNameInputEdit">
+                            <div style="color: red" id="editEmpNameShow"></div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div id="editGender">
+                            性别：<input type="radio" name="gender" checked="checked" value="F">女
+                            <input type="radio" name="gender" value="M">男
+                        </div>
+                        <div style="color: red" id="editGenderShow"></div>
+                    </div>
+                    <div class="form-group row">
+                        <div id="editEmail">
+                            E-mail：<input type="text" required name="email" id="emailInputEdit">
+                            <div style="color: red" id="editEmailShow"></div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div id="editDepartment">
+                            部门：
+                                <select id="departmentInputEdit" required name="deptId" class="form-select" aria-label="Default select example">
+                                </select>
+                            <div style="color: red" id="editDepartmentShow"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="empEditSubmit">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!--显示员工信息列表-->
@@ -133,7 +183,7 @@
             var emailTd = $("<td></td>").append(item.email);
             var deptNameTd = $("<td></td>").append(item.department.deptName);
             var editBtn = $("<button></button>").addClass("btn btn-primary btn-sm edit_btn")
-                .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("编辑");
+                .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("修改").attr("emp-id",item.empId);
             //为编辑按钮添加一个自定义的属性，来表示当前员工id
             editBtn.attr("edit-id",item.empId);
             var delBtn =  $("<button></button>").addClass("btn btn-danger btn-sm delete_btn")
@@ -216,35 +266,39 @@
         //把ul加入到div以显示分页导航条
         ul.appendTo("#page_nav_area");
     }
-/*================模态框控制==========================*/
+/*================新增员工模态框控制==========================*/
     /*模态框加载*/
     $("#addBtn").click(function (){
         $('#addModal').modal({
             backdrop:"false"
         });
+        departmentsToModal("#departmentInput");
     });
-
-    /*将部门信息加载到下拉菜单中*/
-    $.ajax({
-        url:"departments",
-        type:"GET",
-        success:function (result) {
-            var departments = result.extend.Departments;
-            $.each(departments,function (index,department) {
-                var option = $("<option></option>").append(department.deptName).attr("value",department.deptId);
-                option.appendTo($("#addDepartment select"));
-            })
-        }
-    });
-    /*校验员工名*/
-    function checkEmpName(empName) {
+    /*将部门名添加到模态框中*/
+    function departmentsToModal(ele){
+        $(".departmentOption").remove();
+        /*将部门信息加载到下拉菜单中*/
+        $.ajax({
+            url:"departments",
+            type:"GET",
+            success:function (result) {
+                var departments = result.extend.Departments;
+                $.each(departments,function (index,department) {
+                    var option = $("<option></option>").append(department.deptName).attr("value",department.deptId).addClass("departmentOption");
+                    option.appendTo($(ele));
+                })
+            }
+        });
+    }
+    /*校验员工名是否为空，是否重复，是否不合法*/
+    function checkEmpName(ele,empName) {
         if (empName == undefined || empName == null||empName == '') {
-            showCheckInvalid("#empNameInput","error","请填入员工姓名");
+            showCheckInvalid(ele,"error","请填入员工姓名");
             return false;
         }
         regularName = /^([\u4e00-\u9fa5]{2,20}|[a-zA-Z\s]{2,30})$/;
         if(!regularName.test(empName)) {
-            showCheckInvalid("#empNameInput","error","请输入正确的员工姓名");
+            showCheckInvalid(ele,"error","请输入正确的员工姓名");
             return false;
         }
         var checkName = false;
@@ -255,38 +309,51 @@
             async:false,
             success: function (result) {
                 if(result.code==200){
-                    showCheckInvalid("#empNameInput","success","");
+                    showCheckInvalid(ele,"success","");
                     checkName = true;
                 }else{
-                    showCheckInvalid("#empNameInput","error","员工姓名重复");
+                    showCheckInvalid(ele,"error","员工姓名重复");
                     checkName= false;
                 }
             }
         })
         return checkName;
     }
+    /*校验员工名是否为空，是否不合法，但不检测是否重复，以供用户信息更新使用*/
+    function checkEmpNameApartRepeat(ele,empName) {
+        if (empName == undefined || empName == null||empName == '') {
+            showCheckInvalid(ele,"error","请填入员工姓名");
+            return false;
+        }
+        regularName = /^([\u4e00-\u9fa5]{2,20}|[a-zA-Z\s]{2,30})$/;
+        if(!regularName.test(empName)) {
+            showCheckInvalid(ele,"error","请输入正确的员工姓名");
+            return false;
+        }
+        return true;
+    }
     /*校验邮箱地址*/
-    function checkEmail(email) {
+    function checkEmail(ele,email) {
         if (email == undefined || email == null||email == '') {
-            showCheckInvalid("#emailInput","error","请填入邮箱地址");
+            showCheckInvalid(ele,"error","请填入邮箱地址");
             return false;
         }
         var regular = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
         if(regular.test(email)) {
-            showCheckInvalid("#emailInput","success","");
+            showCheckInvalid(ele,"success","");
             return true;
         } else {
-            showCheckInvalid("#emailInput","error","邮箱不可用");
+            showCheckInvalid(ele,"error","邮箱不可用");
             return false;
         }
     }
     /*校验部门名*/
-    function checkDepartment(department) {
+    function checkDepartment(ele,department) {
         if(department == 0){
-            showCheckInvalid("#departmentInputDiv","error","请选择部门");
+            showCheckInvalid(ele,"error","请选择部门");
             return false;
         } else {
-            showCheckInvalid("#departmentInputDiv","success","");
+            showCheckInvalid(ele,"success","");
             return true;
         }
     }
@@ -303,9 +370,11 @@
         }
     }
 
-    /*拦截表单或提交表单*/
+    /*拦截添加表单或提交表单*/
     $("#empAddSubmit").click(function (event){
-        if(checkEmpName($("#empNameInput").val()) && checkEmail($("#emailInput").val()) && checkDepartment($("#departmentInput").val()))
+        if(checkEmpName($("#empNameInput"),$("#empNameInput").val()) &&
+            checkEmail($("#emailInput"),$("#emailInput").val()) &&
+            checkDepartment($("#departmentInput"),$("#departmentInput").val()))
         {
             $.ajax({
                 url:"addEmp",
@@ -330,10 +399,71 @@
                         if(undefined != result.extend.errors.deptId) {
                             showCheckInvalid("#departmentInputDiv","error","部门选择不合法");
                         }
-                        if(undefined != result.extend.errors.deptId) {
-                            showCheckInvalid("#departmentInputDiv","error","部门选择不合法");
-                        }
                         alert("添加失败");
+                    }
+                }
+            })
+        }
+    })
+
+    /*================修改员工信息===================*/
+    /*为修改按钮绑定单机事件*/
+    $(document).on("click",".edit_btn",function (){
+        /*弹出模态框*/
+        $('#editModal').modal({
+            backdrop:"false"
+        });
+        departmentsToModal("#departmentInputEdit");
+        /*给更新按钮添加自定义属性，标记员工id*/
+        $("#empEditSubmit").attr("emp-id",$(this).attr("emp-id"));
+        /*员工信息回显*/
+        $.ajax({
+            url:"employee/"+$(this).attr("emp-id"),
+            method: "GET",
+            success:function (result){
+                var emp = result.extend.employee;
+                $("#empNameInputEdit").val(emp.empName);
+                $("#editGender input[name=gender]").removeAttr("checked");
+                if(emp.gender=="F") $("#editGender input[name=gender]").get(0).checked = true;
+                else $("#editGender input[name=gender]").get(1).checked = true;
+                $("#emailInputEdit").val(emp.email);
+                $("#departmentInputEdit").val([emp.deptId]);
+            }
+        })
+    })
+
+
+    /*点击提交更新按钮*/
+    $("#empEditSubmit").click(function (){
+        /*信息检验通过后，方可提交更新*/
+        if(checkEmpNameApartRepeat($("#empNameInputEdit"),$("#empNameInputEdit").val()) &&
+            checkEmail($("#emailInputEdit"),$("#emailInputEdit").val()) &&
+            checkDepartment($("#departmentInputEdit"),$("#departmentInputEdit").val()))
+        {
+            $.ajax({
+                url:"employee/"+$(this).attr("emp-id"),
+                data:$("#editEmpForm").serialize()+"&_method=PUT",
+                method:"POST",
+                success:function (result) {
+                    if (result.code == 200) {
+                        $("#closeEditModalBtn").click();
+                        alert("更新成功");
+                        $("#editEmpForm")[0].reset();
+                        to_page(currentPage);
+                    } else {    //配合后端 jsr303 校验
+                        if(undefined != result.extend.errors.empName) {
+                            showCheckInvalid("#empNameInputEdit","error","员工名不合法");
+                        }
+                        if(undefined != result.extend.errors.gender) {
+                            showCheckInvalid("#editGender","error","性别选择不合法");
+                        }
+                        if(undefined != result.extend.errors.email) {
+                            showCheckInvalid("#emailInputEdit","error","邮箱地址不合法");
+                        }
+                        if(undefined != result.extend.errors.deptId) {
+                            showCheckInvalid("#departmentInputEditDiv","error","部门选择不合法");
+                        }
+                        alert("更新失败");
                     }
                 }
             })
