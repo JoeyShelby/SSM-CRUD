@@ -122,4 +122,13 @@ public class EmployeeController {
 
         return Msg.success().add("employee",employee);
     }
+
+    @RequestMapping(value = "/employee/{empId}",method = RequestMethod.DELETE)
+    @ResponseBody
+    public Msg deleteMsg(@PathVariable Integer empId){
+        if(employeeService.deleteEmployee(empId) < 1) {
+            return Msg.fail();
+        }
+        return Msg.success();
+    }
 }

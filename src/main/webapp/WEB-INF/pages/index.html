@@ -117,6 +117,23 @@
     </div>
 </div>
 
+<!--删除员工模态框-->
+<div class="modal" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteTitle"></h5>
+            </div>
+            <div class="modal-body">
+               <div>确定要删除该员工信息？</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="empDeleteSubmit">确定</button>
+                <button type="button" class="btn btn-info" id="empDeleteCancel">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <!--显示员工信息列表-->
@@ -186,8 +203,8 @@
                 .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("修改").attr("emp-id",item.empId);
             //为编辑按钮添加一个自定义的属性，来表示当前员工id
             editBtn.attr("edit-id",item.empId);
-            var delBtn =  $("<button></button>").addClass("btn btn-danger btn-sm delete_btn")
-                .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
+            var delBtn =  $("<button></button>").addClass("btn btn-danger btn-sm delete_btn").attr("emp-name",item.empName)
+                .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除").attr("emp-id",item.empId);;
             //为删除按钮添加一个自定义的属性来表示当前删除的员工id
             delBtn.attr("del-id",item.empId);
             var btnTd = $("<td></td>").append(editBtn).append(" ").append(delBtn);
@@ -468,6 +485,46 @@
                 }
             })
         }
+    })
+
+
+    /*============删除功能============*/
+    $(document).on("click", ".delete_btn", function (){
+        $("#deleteTitle").text("");
+        /*打开模态框*/
+        $("#deleteModal").modal({
+            backdrop:"false"
+        })
+
+        /*回显员工信息*/
+        var empName = $(this).attr("emp-name");
+        var empId = $(this).attr("emp-id")
+        $("#deleteTitle").append("员工："+empName);
+        $("#empDeleteSubmit").attr("emp-id",empId);
+    })
+
+    /*给取消和确定按钮绑定单击事件*/
+    $("#empDeleteCancel").click(function (){
+        $("#deleteModal").modal('hide')
+    })
+
+    $("#empDeleteSubmit").click(function (){
+        var empId = $(this).attr("emp-id");
+
+        $.ajax({
+            url:"employee/"+empId,
+            data:"_method=DELETE",
+            method:"POST",
+            success:function (result) {
+                if (result.code == 200) {
+                    alert("删除成功");
+                    $("#deleteModal").modal('hide');
+                    to_page(currentPage);
+                } else {
+                    alert("删除失败");
+                }
+            }
+        })
     })
 </script>
 
