@@ -394,7 +394,7 @@
             checkDepartment($("#departmentInput"),$("#departmentInput").val()))
         {
             $.ajax({
-                url:"addEmp",
+                url:"employee",
                 data:$("#empForm").serialize(),
                 method:"POST",
                 success:function (result) {

@@ -27,8 +27,12 @@ public class EmployeeController {
     @Autowired
     EmployeeService employeeService;
 
+    @RequestMapping("/")
+    public String toIndex(){
+        return "index";
+    }
 
-    @RequestMapping("/employee")
+    @RequestMapping(value = "/employee",method = RequestMethod.GET)
     @ResponseBody
     public Msg toEmployee(@RequestParam(value = "pageNumber", defaultValue = "1") Integer pageNumber) {
         PageHelper.startPage(pageNumber, 5);
@@ -54,7 +58,7 @@ public class EmployeeController {
 
     }
 
-    @RequestMapping("/addEmp")
+    @RequestMapping(value = "/employee",method = RequestMethod.POST)
     @ResponseBody
     public Msg addEmp(@Valid Employee employee, BindingResult result){
         // jsr303 检测不通过
